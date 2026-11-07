@@ -73,9 +73,11 @@ class CommandDispatcher {
             }
             case 'Pause_V2'.toLowerCase(): {
                 promise = this.bot.ecovacs.sendCommand(new this.bot.vacBotCommand.Pause_V2(), options);
+                break;
             }
             case 'Resume_V2'.toLowerCase(): {
                 promise = this.bot.ecovacs.sendCommand(new this.bot.vacBotCommand.Resume_V2(), options);
+                break;
             }
             case 'Stop'.toLowerCase(): {
                 if (this.bot.isPlatformTypeAirbot() || this.bot.isPlatformTypeX2()) {
@@ -87,6 +89,7 @@ class CommandDispatcher {
             }
             case 'Stop_V2'.toLowerCase(): {
                 promise = this.bot.ecovacs.sendCommand(new this.bot.vacBotCommand.Stop_V2(), options);
+                break;
             }
             case 'Resume'.toLowerCase(): {
                 if (this.bot.isPlatformTypeAirbot() || this.bot.isPlatformTypeX2()) {

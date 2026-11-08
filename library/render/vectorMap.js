@@ -76,21 +76,37 @@ function toHighlightSet(highlight) {
 function classifyLayers(vector) {
     const rooms = [];
     const walls = [];
+
     if (!Array.isArray(vector)) {
         return { rooms, walls };
     }
+
     for (const layer of vector) {
         if (!Array.isArray(layer) || layer.length < 2) {
             continue;
         }
+
         const type = String(layer[0]);
-        const parsed = parseLayer(layer[1]);
-        if (type === '2') {
-            rooms.push(parsed);
-        } else if (type === '1') {
-            walls.push(parsed);
+
+        if (type !== '1' && type !== '2') {
+            continue;
+        }
+
+        for (const value of layer.slice(1)) {
+            if (typeof value !== 'string') {
+                continue;
+            }
+
+            const parsed = parseLayer(value);
+
+            if (type === '2') {
+                rooms.push(parsed);
+            } else {
+                walls.push(parsed);
+            }
         }
     }
+
     return { rooms, walls };
 }
 

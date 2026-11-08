@@ -203,19 +203,25 @@ function renderVectorMapPNG(vector, opts = {}) {
         });
     });
 
-    // Layer 6: translucent overlay for inspecting detailed geometry.
+    // Layer 6: normal room colour.
+    // The room area outside layer 6 retains its darker base fill.
     visibleLayer6.forEach((area) => {
         if (area.points.length < 3) {
             return;
         }
 
+        const roomIndex = rooms.findIndex(
+            (room) => String(room.id) === String(area.id)
+        );
+
+        if (roomIndex < 0) {
+            return;
+        }
+
+        const color = ROOM_COLORS[roomIndex % ROOM_COLORS.length];
         const pts = area.points.map(([x, y]) => [tx(x), ty(y)]);
 
-        shapes.fillPolygon(fb, pts, LAYER6_COLOR, 50);
-        shapes.strokePolyline(fb, pts, LAYER6_COLOR, {
-            closed: true,
-            width: 1
-        });
+        shapes.fillPolygon(fb, pts, color, 255);
     });
 
     // Draw walls over the polygons.

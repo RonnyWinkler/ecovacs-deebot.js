@@ -22,10 +22,21 @@ const shapes = require('./shapes');
 const { encodePNGDataURL } = require('./png');
 
 const ROOM_COLORS = [
-    [76, 175, 80], [41, 182, 246], [255, 179, 0], [239, 83, 80],
-    [126, 87, 194], [38, 166, 154], [236, 64, 122], [141, 110, 99],
-    [66, 165, 245], [156, 204, 101], [255, 112, 67], [92, 107, 192]
+    [155, 188, 230], // pastel blue
+    [242, 210, 143], // pastel yellow
+    [131, 210, 215], // pastel turquoise
+    [241, 190, 199], // pastel pink
+    [190, 175, 220],
+    [170, 210, 175],
+    [235, 190, 150],
+    [180, 200, 220]
 ];
+
+// const ROOM_COLORS = [
+//     [76, 175, 80], [41, 182, 246], [255, 179, 0], [239, 83, 80],
+//     [126, 87, 194], [38, 166, 154], [236, 64, 122], [141, 110, 99],
+//     [66, 165, 245], [156, 204, 101], [255, 112, 67], [92, 107, 192]
+// ];
 
 const WALL_COLOR = [230, 230, 230];
 const LAYER6_COLOR = [255, 255, 255];
@@ -196,7 +207,7 @@ function renderVectorMapPNG(vector, opts = {}) {
         const pts = room.points.map(([x, y]) => [tx(x), ty(y)]);
         const emphasised = highlight.has(String(room.id));
 
-        shapes.fillPolygon(fb, pts, color, emphasised ? 216 : 120);
+        shapes.fillPolygon(fb, pts, color, emphasised ? 255 : 210);
         shapes.strokePolyline(fb, pts, color, {
             closed: true,
             width: 2

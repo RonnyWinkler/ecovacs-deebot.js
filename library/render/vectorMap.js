@@ -39,7 +39,9 @@ const ROOM_COLORS = [
 // ];
 
 const WALL_COLOR = [230, 230, 230];
-const LAYER6_COLOR = [255, 255, 255];
+const TRACE_COLOR = [255, 255, 255];
+// Observed white cleaning route in the supplied device trace.
+const TRACE_CLEANING_FLAG = 0x40;
 const BG_COLOR = [11, 11, 11];
 const ROBOT_COLOR = [33, 150, 243];
 const CHARGER_COLOR = [76, 175, 80];
@@ -146,6 +148,8 @@ function classifyLayers(vector) {
  * @param {{x:number,y:number}} [opts.chargePosition] - world units
  * @param {string|number|Array} [opts.highlight] - room IDs to emphasise
  * @param {boolean} [opts.showLayer6=true] - show layer-6 overlay
+ * @param {Array<{index:number,x:number,y:number,flag:number}>} [opts.tracePoints]
+ *   Route points sorted by index; coordinates already scaled to world units.
  * @returns {string|null} PNG data URL, or null when nothing renderable
  */
 function renderVectorMapPNG(vector, opts = {}) {
@@ -244,6 +248,35 @@ function renderVectorMapPNG(vector, opts = {}) {
         const pts = wall.points.map(([x, y]) => [tx(x), ty(y)]);
         shapes.strokePolyline(fb, pts, WALL_COLOR, { width: 2 });
     });
+
+    // Draw the observed cleaning route above walls and below markers.
+    // Do not bridge missing indexes, other flags or invalid coordinates.
+    // Keep the map transform fixed: route points do not affect its bounds.
+    const tracePoints = Array.isArray(opts.tracePoints) ? opts.tracePoints : [];
+    for (let i = 1; i < tracePoints.length; i++) {
+        const previous = tracePoints[i - 1];
+        const current = tracePoints[i];
+
+        if (
+            !previous || !current ||
+            !Number.isInteger(previous.index) ||
+            !Number.isInteger(current.index) ||
+            current.index !== previous.index + 1 ||
+            previous.flag !== TRACE_CLEANING_FLAG ||
+            current.flag !== TRACE_CLEANING_FLAG ||
+            !Number.isFinite(previous.x) ||
+            !Number.isFinite(previous.y) ||
+            !Number.isFinite(current.x) ||
+            !Number.isFinite(current.y)
+        ) {
+            continue;
+        }
+
+        shapes.strokePolyline(fb, [
+            [tx(previous.x), ty(previous.y)],
+            [tx(current.x), ty(current.y)]
+        ], TRACE_COLOR, { width: 2 });
+    }
 
     const marker = (pos, color, radius) => {
         if (pos && Number.isFinite(pos.x) && Number.isFinite(pos.y)) {

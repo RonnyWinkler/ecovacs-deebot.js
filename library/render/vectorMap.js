@@ -39,7 +39,7 @@ const ROOM_COLORS = [
 // ];
 
 const WALL_COLOR = [230, 230, 230];
-const TRACE_COLOR = [255, 255, 255];
+const TRACE_COLOR = [150, 35, 45]; // dark red
 // Observed white cleaning route in the supplied device trace.
 const TRACE_CLEANING_FLAG = 0x40;
 const BG_COLOR = [11, 11, 11];
@@ -275,7 +275,7 @@ function renderVectorMapPNG(vector, opts = {}) {
         shapes.strokePolyline(fb, [
             [tx(previous.x), ty(previous.y)],
             [tx(current.x), ty(current.y)]
-        ], TRACE_COLOR, { width: 2 });
+        ], TRACE_COLOR, { width: 6 });
     }
 
     const marker = (pos, color, radius) => {
@@ -287,8 +287,11 @@ function renderVectorMapPNG(vector, opts = {}) {
     };
 
     marker(opts.chargePosition, CHARGER_COLOR, 8);
-    marker(opts.deebotPosition, ROBOT_COLOR, 9);
 
+    // White outline, followed by the larger blue robot marker.
+    marker(opts.deebotPosition, [255, 255, 255], 32);
+    marker(opts.deebotPosition, ROBOT_COLOR, 28);
+    
     return encodePNGDataURL(fb);
 }
 

@@ -41,7 +41,12 @@ const ROOM_COLORS = [
 const WALL_COLOR = [230, 230, 230];
 const TRACE_COLOR = [150, 35, 45]; // dark red
 // Observed white cleaning route in the supplied device trace.
-const TRACE_CLEANING_FLAGS = new Set([0x10, 0x18, 0x40]);
+const TRACE_CLEANING_FLAGS = new Set([
+    0x08,
+    0x10,
+    0x18,
+    0x40
+]);
 const BG_COLOR = [11, 11, 11];
 const ROBOT_COLOR = [33, 150, 243];
 const CHARGER_COLOR = [76, 175, 80];

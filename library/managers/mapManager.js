@@ -1,6 +1,7 @@
 'use strict';
 
 const TRACE_COORDINATE_SCALE = 10;
+const LIVE_IMAGE_SCHEDULE_INTERVAL = 5000; // Example interval in milliseconds for live image updates
 
 const tools = require('../tools');
 const map = require('../mapInfo');
@@ -392,7 +393,6 @@ class MapManager {
     async handleMapInfoV2(payload) {
         // A fetched floor is not necessarily the robot's active floor.
         const mapId = String(payload.mid);
-        tools.envLogNotice(`[MapManager] MapInfo_V2 mid: ${mapId} type: ${payload['type']} infoSize: ${payload['infoSize']}`);
         // Newer devices return vector geometry instead of raster pieces.
         if (!payload['info']) {
             return;
@@ -422,7 +422,7 @@ class MapManager {
 
             // Trace data may have arrived before this floor's geometry.
             if (this._mapTrace?.mapId === mapId) {
-                this.renderLiveMapImageV2();
+                this.scheduleLiveMapImageV2();
             }
         } catch (e) {
             tools.envLogError(`[MapManager] Error rendering MapInfo_V2 map: ${e.message}`);
@@ -445,18 +445,6 @@ class MapManager {
             const tracePoints = [...trace.points.values()].sort(
                 (a, b) => a.index - b.index
             );
-
-            tools.envLogNotice(JSON.stringify({
-                mapId: trace.mapId,
-                receivedCount: tracePoints.length,
-                flags: [...new Set(tracePoints.map(point => point.flag))],
-                drawableSegments: tracePoints.filter((point, i) =>
-                    i > 0 &&
-                    point.index === tracePoints[i - 1].index + 1 &&
-                    point.flag === 0x40 &&
-                    tracePoints[i - 1].flag === 0x40
-                ).length
-            }));
 
             const latestPoint = tracePoints[tracePoints.length - 1];
             const isCurrentMap = String(this.currentMapMID) === trace.mapId;
@@ -888,12 +876,24 @@ class MapManager {
             );
 
             this._mapTrace.receivedAt = new Date().toISOString();
-            this.renderLiveMapImageV2();
+
+            this.scheduleLiveMapImageV2();
         } catch (error) {
             tools.envLogError(
                 `[MapManager] Error decoding MapTrace: ${error.message}`
             );
         }
+    }
+    
+    scheduleLiveMapImageV2() {
+        const now = Date.now();
+
+        if (now - (this._lastLiveMapImageAt ?? 0) < LIVE_IMAGE_SCHEDULE_INTERVAL) {
+            return;
+        }
+
+        this._lastLiveMapImageAt = now;
+        this.renderLiveMapImageV2();
     }
 
     /**

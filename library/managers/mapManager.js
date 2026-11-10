@@ -886,9 +886,14 @@ class MapManager {
     }
     
     scheduleLiveMapImageV2() {
-        const now = Date.now();
+        if (this.bot.ecovacs.listenerCount('LiveMapImageV2') === 0) {
+            return;
+        }
 
-        if (now - (this._lastLiveMapImageAt ?? 0) < LIVE_IMAGE_SCHEDULE_INTERVAL) {
+        const now = Date.now();
+        const interval = this.liveMapImageIntervalMs ?? LIVE_IMAGE_SCHEDULE_INTERVAL;
+
+        if (now - (this._lastLiveMapImageAt ?? 0) < interval) {
             return;
         }
 
@@ -908,6 +913,16 @@ class MapManager {
             currentSpotAreaName = mapInfo[currentSpotAreaID].mapSpotAreaName;
         }
         return currentSpotAreaName;
+    }
+
+    setLiveMapImageInterval(intervalMs) {
+        if (!Number.isFinite(intervalMs) || intervalMs < 0) {
+            throw new TypeError(
+                'Live map image interval must be a non-negative number'
+            );
+        }
+
+        this.liveMapImageIntervalMs = intervalMs;
     }
 }
 

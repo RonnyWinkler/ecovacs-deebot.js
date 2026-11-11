@@ -619,41 +619,46 @@ class MapManager {
      * @param {Object} payload
      */
     async handleMapSet_V2(payload) {
-        let subsets = payload['subsets'];
-        if (typeof subsets === 'string') {
-            subsets = JSON.parse(await mapTemplate.decompressToString(subsets));
-        }
-        if ((subsets !== undefined) && Array.isArray(subsets)) {
-            const type = payload['type'];
-            const subsetData = [];
-            subsets.forEach((subset) => {
-                const mssid = subset[0];
-                const name = subset[1];
-                const subtype = subset[2];
-                const areaConnections = subset[3];
-                const index = subset[4];
-                const spotPosition = subset[5] + ',' + subset[6];
-                const cleanCount = subset[7].split('-')[0];
-                const cleanSpeed = subset[7].split('-')[1];
-                const waterLevel = subset[7].split('-')[2];
-                const singleSubsetData = {
-                    'index': index,
-                    'mssid': mssid,
-                    'name': name,
-                    'subtype': subtype,
-                    'type': type,
-                    'areaConnections': areaConnections.replace(/-/g, ','),
-                    'cleanCount': Number(cleanCount),
-                    'cleanSpeed': dictionary.CLEAN_SPEED_FROM_ECOVACS[cleanSpeed],
-                    'waterLevel': Number(waterLevel),
-                    'spotPosition': spotPosition
+        try{
+            let subsets = payload['subsets'];
+            if (typeof subsets === 'string') {
+                subsets = JSON.parse(await mapTemplate.decompressToString(subsets));
+            }
+            if ((subsets !== undefined) && Array.isArray(subsets)) {
+                const type = payload['type'];
+                const subsetData = [];
+                subsets.forEach((subset) => {
+                    const mssid = subset[0];
+                    const name = subset[1];
+                    const subtype = subset[2];
+                    const areaConnections = subset[3];
+                    const index = subset[4];
+                    const spotPosition = subset[5] + ',' + subset[6];
+                    const cleanCount = subset[7]?.split('-')[0];
+                    const cleanSpeed = subset[7]?.split('-')[1];
+                    const waterLevel = subset[7]?.split('-')[2];
+                    const singleSubsetData = {
+                        'index': index,
+                        'mssid': mssid,
+                        'name': name,
+                        'subtype': subtype,
+                        'type': type,
+                        'areaConnections': areaConnections.replace(/-/g, ','),
+                        'cleanCount': cleanCount !== undefined ? Number(cleanCount) : undefined,
+                        'cleanSpeed': dictionary.CLEAN_SPEED_FROM_ECOVACS[cleanSpeed],
+                        'waterLevel': waterLevel !== undefined ? Number(waterLevel) : undefined,
+                        'spotPosition': spotPosition
+                    };
+                    subsetData.push(singleSubsetData);
+                });
+                this.mapSet_V2 = {
+                    'mid': payload['mid'],
+                    'subsets': subsetData
                 };
-                subsetData.push(singleSubsetData);
-            });
-            this.mapSet_V2 = {
-                'mid': payload['mid'],
-                'subsets': subsetData
-            };
+            }
+        } catch (e) {
+            tools.envLogError(`error handling MapSet_V2: ${e.message}`);
+            throw new Error(`error handling MapSet_V2: ${e.message}`, { cause: e });
         }
     }
 
